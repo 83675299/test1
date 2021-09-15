@@ -28,11 +28,11 @@ class AC(object):
             length=len(word)
             for i in range(0,len(word)):
                 k=word[i]
-                f=False
+                f=False#来判断下一个是否是汉字
                 if '\u4e00' <= word[i] <= '\u9fff':
                     for x in pypinyin.pinyin(word[i], style=pypinyin.NORMAL):  # 把汉字变成拼音
                         k = ''.join(x)
-                if i <len(word)-1 and '\u4e00' <= word[i+1] <= '\u9fff':
+                if i <len(word)-1 and '\u4e00' <= word[i+1] <= '\u9fff':#找下一个汉字来解决首字母的问题（成功了一部分）
                     for x in pypinyin.pinyin(word[i+1], style=pypinyin.NORMAL):  # 把汉字变成拼音
                         u = ''.join(x)
                         first=u[0]
@@ -49,7 +49,7 @@ class AC(object):
                     else:
                         p.next[k[j]] = Node(k[j])
                     p = p.next[k[j]]
-                    if j==0 and f==True:
+                    if j==0 and f==True:#还是解决首字母
                         p.next[first]=Node(first)
                     if j==0 and i==len(word)-1:
                         p.isend=True
@@ -124,13 +124,13 @@ class AC(object):
                 else:
                     continue
 
-                if p.isend is True:
+                if p.isend is True:#是否结束，因为有很多情况，所以多复制了几次判断
                     out1.append(i)
                     out2.append(p.word)
                     out3.append(word[begin:j])
                     p = self.root
                     count += 1
-                elif k in p.next.keys():
+                elif k in p.next.keys():#进入下个结点
                     p = p.next[k]
                 else:
                     p = p.fail
