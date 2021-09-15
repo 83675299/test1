@@ -1,3 +1,4 @@
+import json
 import pypinyin
 
 
@@ -24,19 +25,34 @@ class AC(object):
         p = Node()
         for word in words:
             p = root
-            first=[]
-            for i in word:
-                if '\u4e00' <= i <= '\u9fff':
-                    for x in pypinyin.pinyin(i, style=pypinyin.NORMAL):  # 把汉字变成拼音
-                        i = ''.join(x)
-                    first.append(i[0])
-                for j in range(0, len(i)):
-                    if i[j] in p.next.keys():
-                        p = p.next[i[j]]
+            length=len(word)
+            for i in range(0,len(word)):
+                k=word[i]
+                f=False
+                if '\u4e00' <= word[i] <= '\u9fff':
+                    for x in pypinyin.pinyin(word[i], style=pypinyin.NORMAL):  # 把汉字变成拼音
+                        k = ''.join(x)
+                if i <len(word)-1 and '\u4e00' <= word[i+1] <= '\u9fff':
+                    for x in pypinyin.pinyin(word[i+1], style=pypinyin.NORMAL):  # 把汉字变成拼音
+                        u = ''.join(x)
+                        first=u[0]
+                        f = True
+
+                for j in range(0, len(k)):
+                    if k[j] in p.next.keys():
+                        p = p.next[k[j]]
+                        if j == 0 and f == True:
+                            p.next[first] = Node(first)
+                        if j == 0 and i == len(word) - 1:
+                            p.isend = True
                         continue
                     else:
-                        p.next[i[j]] = Node(i[j])
-                    p = p.next[i[j]]
+                        p.next[k[j]] = Node(k[j])
+                    p = p.next[k[j]]
+                    if j==0 and f==True:
+                        p.next[first]=Node(first)
+                    if j==0 and i==len(word)-1:
+                        p.isend=True
             p.word = word
             p.isend = True
         # 使用fail指向来做AC机
@@ -74,6 +90,7 @@ class AC(object):
             word = words[i]
             p = self.root
             for j in range(0, len(word)):
+                ischinese = False
                 k = word[j]
                 if p == ac.root:
                     begin = j
@@ -106,16 +123,15 @@ class AC(object):
                     count += 1
                 else:
                     continue
-                if i==7:
-                    print(k,p.value,p.next.keys())
-                if k in p.next.keys():
-                    p = p.next[k]
-                elif p.isend is True:
+
+                if p.isend is True:
                     out1.append(i)
                     out2.append(p.word)
                     out3.append(word[begin:j])
                     p = self.root
                     count += 1
+                elif k in p.next.keys():
+                    p = p.next[k]
                 else:
                     p = p.fail
                     if k in p.next.keys():
