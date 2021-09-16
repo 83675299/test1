@@ -1,8 +1,9 @@
+import sys
 import pypinyin
 
 
 class Node(object):
-    # value是该节点存的字，fail是指向的节点，next是子字典，word是目前建立的try树
+    # value是该节点存的字，fail是指向的节点，next是子字典，word是目前建立的trie树
     def __init__(self, value=None):
         self.value = value
         self.fail = None
@@ -11,7 +12,7 @@ class Node(object):
         self.isend = False
 
 
-def ac_build(file):
+def tree_build(file):
     # 读入文件
     with open(file, encoding='UTF-8') as words:
         words = words.read().split('\n')
@@ -52,7 +53,7 @@ def ac_build(file):
     return root
 
 
-def fail_build(root):
+def ac_build(root):
     # 使用fail指向来做AC机
     queue = []
     queue.insert(0, (root, None))
@@ -79,12 +80,13 @@ def fail_build(root):
 
 class AC(object):
     def __init__(self, words):
-        self.root = ac_build(words)
-        self.root = fail_build(self.root)
+        self.root = tree_build(words)
+        self.root = ac_build(self.root)
 
-    def search(self, file):
-        with open(file, encoding='UTF-8') as words:
+    def search(self, org, ans):
+        with open(org, encoding='UTF-8') as words:
             words = words.read().split('\n')
+        ans_file = open(ans, 'w', encoding='UTF-8')
         out1 = []
         out2 = []
         out3 = []
@@ -147,12 +149,14 @@ class AC(object):
                 out2.append(p.word)
                 out3.append(word[begin:j + 1])
                 count += 1
-
-        print(f"total : {count}")
+        ans_file.write(f"total : {count}")
         for i in range(0, count):
-            print(f"Line{out1[i] + 1}: <{out2[i]}> {out3[i]}")
+            ans_file.write('\n'+f"Line{out1[i] + 1}: <{out2[i]}> {out3[i]}")
 
 
 if __name__ == '__main__':
-    ac = AC(r'C:\Users\hqk\Desktop\软工作业\words.txt')
-    ac.search(r'C:\Users\hqk\Desktop\软工作业\org.txt')
+    word = sys.argv[1]
+    org = sys.argv[2]
+    ans = sys.argv[3]
+    ac = AC(word)
+    ac.search(org,ans)
