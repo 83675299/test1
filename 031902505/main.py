@@ -83,7 +83,7 @@ def ac_build(root):
                 temp.fail = fail.next[temp.value]
             else:
                 temp.fail = root
-    root.fail = root
+    root.fail = root #没有这句的话会报错
     return root
 
 
@@ -107,7 +107,7 @@ class AC(object):
                 k = word[j]
                 if p == self.root:
                     begin = j
-                if '\u4e00' <= k <= '\u9fff':
+                if '\u4e00' <= k <= '\u9fff': # 如果是中文就进入if
                     k=convert_pinyin(k)
                     for t in range(0, len(k)):
                         if k[t] in p.next.keys():
@@ -158,11 +158,13 @@ class AC(object):
         write_file(ans_file,count,out1,out2,out3)
 
 def write_file(file,count,out1,out2,out3):
+    #输出文件，count是检测出来敏感词的个数
     file.write(f"Total : {count}")
     for i in range(0, count):
         file.write('\n' + f"Line{out1[i] + 1}: <{out2[i]}> {out3[i]}")
 
 if __name__ == '__main__':
+    #读命令行的命令
     words = sys.argv[1]
     org = sys.argv[2]
     ans = sys.argv[3]
