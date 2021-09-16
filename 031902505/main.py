@@ -11,11 +11,22 @@ class Node(object):
         self.word = ''
         self.isend = False
 
-
-def tree_build(file):
+def read_file(file_path):
     # 读入文件
-    with open(file, encoding='UTF-8') as words:
+    with open(file_path, encoding='UTF-8') as words:
         words = words.read().split('\n')
+    return words
+
+def convert_pinyin(word):
+    #汉字转拼音
+    for x in pypinyin.pinyin(word, style=pypinyin.NORMAL):  # 把汉字变成拼音
+        k = ''.join(x)
+    return k
+
+
+
+def tree_build(words):
+
     # 建树
     root = Node()
     for word in words:
@@ -25,14 +36,12 @@ def tree_build(file):
             k = word[i]
             f = False  # 来判断下一个是否是汉字
             if '\u4e00' <= word[i] <= '\u9fff':
-                for x in pypinyin.pinyin(word[i], style=pypinyin.NORMAL):  # 把汉字变成拼音
-                    k = ''.join(x)
+                k=convert_pinyin(word[i])
             if i < len(word) - 1 and '\u4e00' <= word[i + 1] <= '\u9fff':  # 找下一个汉字来解决首字母的问题（成功了一部分）
-                for x in pypinyin.pinyin(word[i + 1], style=pypinyin.NORMAL):  # 把汉字变成拼音
-                    u = ''.join(x)
-                    first = u[0]
-                    f = True
-
+                u=convert_pinyin(word)
+                first = u[0]
+                f = True
+            k = k.lower()
             for j in range(0, len(k)):
                 if k[j] in p.next.keys():
                     p = p.next[k[j]]
@@ -83,9 +92,7 @@ class AC(object):
         self.root = tree_build(words)
         self.root = ac_build(self.root)
 
-    def search(self, org, ans):
-        with open(org, encoding='UTF-8') as words:
-            words = words.read().split('\n')
+    def search(self, words, ans):
         ans_file = open(ans, 'w', encoding='UTF-8')
         out1 = []
         out2 = []
@@ -98,24 +105,23 @@ class AC(object):
             p = self.root
             for j in range(0, len(word)):
                 k = word[j]
-                if p == ac.root:
+                if p == self.root:
                     begin = j
                 if '\u4e00' <= k <= '\u9fff':
-                    for x in pypinyin.pinyin(k, style=pypinyin.NORMAL):  # 把汉字拆成拼音，对单个字母检索
-                        k = ''.join(x)
-                        for t in range(0, len(k)):
+                    k=convert_pinyin(k)
+                    for t in range(0, len(k)):
+                        if k[t] in p.next.keys():
+                           p = p.next[k[t]]
+                        elif p.isend is True:
+                            out1.append(i)
+                            out2.append(p.word)
+                            out3.append(word[begin:j])
+                            p = self.root
+                            count += 1
+                        else:
+                            p = p.fail
                             if k[t] in p.next.keys():
                                 p = p.next[k[t]]
-                            elif p.isend is True:
-                                out1.append(i)
-                                out2.append(p.word)
-                                out3.append(word[begin:j])
-                                p = self.root
-                                count += 1
-                            else:
-                                p = p.fail
-                                if k[t] in p.next.keys():
-                                    p = p.next[k[t]]
                     continue
                 elif 'A' <= k <= 'Z':
                     k = k.lower()
@@ -149,14 +155,16 @@ class AC(object):
                 out2.append(p.word)
                 out3.append(word[begin:j + 1])
                 count += 1
-        ans_file.write(f"total : {count}")
-        for i in range(0, count):
-            ans_file.write('\n'+f"Line{out1[i] + 1}: <{out2[i]}> {out3[i]}")
+        write_file(ans_file,count,out1,out2,out3)
 
+def write_file(file,count,out1,out2,out3):
+    file.write(f"Total : {count}")
+    for i in range(0, count):
+        file.write('\n' + f"Line{out1[i] + 1}: <{out2[i]}> {out3[i]}")
 
 if __name__ == '__main__':
-    word = sys.argv[1]
+    words = sys.argv[1]
     org = sys.argv[2]
     ans = sys.argv[3]
-    ac = AC(word)
-    ac.search(org,ans)
+    ac = AC(read_file(words))
+    ac.search(read_file(org),ans)
